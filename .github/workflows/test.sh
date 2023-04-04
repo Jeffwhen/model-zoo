@@ -46,4 +46,5 @@ if [[ ! -z $cases ]]; then
 fi
 
 quiet_exec pip3 install -r test/requirements.txt -i https://mirrors.cloud.tencent.com/pypi/simple
+echo $PATH
 eval ${cmd} test

@@ -39,3 +39,4 @@ bmnetu_options:
   --enable_profile=True
 
 bmnetu_batch_sizes: [1, 4, 8, 16]
+
