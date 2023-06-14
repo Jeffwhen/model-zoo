@@ -1,0 +1,91 @@
+---
+
+name: resnet50-caffe
+gops: [7.73, 30.92, 61.84, 123.68]
+
+shapes:
+  - [1, 3, 224, 224]
+  - [4, 3, 224, 224]
+  - [8, 3, 224, 224]
+  - [16, 3, 224, 224]
+
+model: $(home)/ResNet-50-deploy.prototxt
+weight: $(home)/ResNet-50-model.caffemodel
+
+mlir_transform:
+  model_transform.py
+    --model_name $(name)
+    --model_def $(model)
+    --model_data $(weight)
+    --input_shapes [1,3,224,224]
+    --mean 104,117,123
+    --scale 1,1,1
+    --pixel_format bgr
+    --test_input $(root)/dataset/samples/cat.jpg
+    --test_result $(name)_top_outputs.npz
+    --mlir $(workdir)/$(name).mlir
+
+mlir_calibration:
+  run_calibration.py $(workdir)/$(name).mlir
+    --dataset $(imagenet2012_cali_set)
+    --input_num 100
+    -o $(workdir)/$(name).calitable
+
+deploy:
+  - model_deploy.py --mlir $(workdir)/$(name).mlir
+      --quantize F32
+      --chip $(target)
+      --test_input $(workdir)/$(name)_in_f32.npz
+      --test_reference $(name)_top_outputs.npz
+      --tolerance 0.99,0.99
+      --model $(workdir)/$(name)_$(target)_f32.bmodel
+  - model_deploy.py --mlir $(workdir)/$(name).mlir
+      --quantize INT8
+      --calibration_table $(workdir)/$(name).calitable
+      --quant_input
+      --quant_output
+      --chip $(target)
+      --test_input $(workdir)/$(name)_in_f32.npz
+      --test_reference $(name)_top_outputs.npz
+      --tolerance 0.98,0.85
+      --model $(workdir)/$(name)_$(target)_int8_sym.bmodel
+
+dataset:
+  image_path: $(imagenet2012_val_set)
+  image_label: $(imagenet2012_caffe_val_ground_truth)
+  mean: [104, 117, 123]
+  scale: 1
+  resize_dims: 256
+  size: 224
+  trans: true
+
+harness:
+  type: topk
+  args:
+    - name: FP32
+      bmodel: $(workdir)/resnet50-caffe_$(target)_f32.bmodel
+    - name: INT8-sym
+      bmodel: $(workdir)/resnet50-caffe_$(target)_int8_sym.bmodel
+
+BM1684X:
+  +deploy:
+    - model_deploy.py --mlir $(workdir)/$(name).mlir
+        --quantize INT8
+        --asymmetric
+        --calibration_table $(workdir)/$(name).calitable
+        --quant_input
+        --quant_output
+        --chip $(target)
+        --test_input $(workdir)/$(name)_in_f32.npz
+        --test_reference $(name)_top_outputs.npz
+        --tolerance 0.98,0.85
+        --model $(workdir)/$(name)_$(target)_int8_asym.bmodel
+  harness:
+    type: topk
+    args:
+      - name: FP32
+        bmodel: $(workdir)/resnet50-caffe_$(target)_f32.bmodel
+      - name: INT8-sym
+        bmodel: $(workdir)/resnet50-caffe_$(target)_int8_sym.bmodel
+      - name: INT8-asym
+        bmodel: $(workdir)/resnet50-caffe_$(target)_int8_asym.bmodel

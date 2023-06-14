@@ -125,7 +125,7 @@ python3 .github/workflows/check.py
 |resnet18-v2                      |[vision/classification/resnet18-v2](vision/classification/resnet18-v2)                                |                    |:white\_check\_mark:|
 |resnet34                         |[vision/classification/ResNet34](vision/classification/ResNet34)                                      |:white\_check\_mark:|                    |
 |resnet34-v1-7                    |[vision/classification/resnet34-v1-7](vision/classification/resnet34-v1-7)                            |:white\_check\_mark:|:white\_check\_mark:|
-|resnet50-caffe                   |[vision/classification/ResNet50-Caffe](vision/classification/ResNet50-Caffe)                          |:white\_check\_mark:|                    |
+|resnet50-caffe                   |[vision/classification/ResNet50-Caffe](vision/classification/ResNet50-Caffe)                          |:white\_check\_mark:|:white\_check\_mark:|
 |resnet50-v1-7                    |[vision/classification/resnet50-v1-7](vision/classification/resnet50-v1-7)                            |:white\_check\_mark:|:white\_check\_mark:|
 |resnet50-v2                      |[vision/classification/resnet50-v2](vision/classification/resnet50-v2)                                |                    |:white\_check\_mark:|
 |ResNet50\_vd\_infer              |[vision/classification/ResNet50\_vd\_paddle](vision/classification/ResNet50_vd_paddle)                |                    |:white\_check\_mark:|
